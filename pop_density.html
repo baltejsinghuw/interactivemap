@@ -101,7 +101,7 @@
         });
 
         async function geojsonFetch() {
-            let response = await fetch('file:///C:/Users/baltejsingh/Desktop/lab4/assets/pop_density.geojson');
+            let response = await fetch('file:///C:/Users/baltejsingh/Desktop/lab4/assets/state_data.geojson');
             let popDensityData = await response.json();
 
             map.on('load', function loadingData() {
