@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>US Population Density</title>
+    <title>Interactive Web Mapping</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
@@ -12,6 +12,19 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
+        }
+
+        h2, h3 {
+            margin: 10px;
+            font-size: 18px;
+        }
+
+        h3 {
+            font-size: 16px;
+        }
+
+        p {
+            margin: 10px;
         }
 
         #map {
@@ -25,25 +38,32 @@
 
         .map-overlay {
             position: absolute;
+            bottom: 0;
+            left: 0;
             background: rgba(255, 255, 255, 0.8);
             border-style: solid;
             border-width: 1px;
             border-color: rgba(0, 0, 0, 0.2);
-            margin: 10px;
-            padding: 10px;
+            margin-left: 20px;
+            font-family: Arial, sans-serif;
             overflow: auto;
             border-radius: 3px;
         }
 
-        .legend {
-            bottom: 20px; /* Adjust bottom position */
-            left: 20px; /* Adjust left position */
-            width: 150px;
-            height: 210px;
+        #features {
+            top: 0;
+            height: 100px;
+            margin-top: 20px;
+            width: 250px;
+        }
+
+        #legend {
             padding: 10px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             line-height: 18px;
+            height: 210px;
             margin-bottom: 40px;
+            width: 150px;
         }
 
         .legend-key {
@@ -53,100 +73,126 @@
             height: 10px;
             margin-right: 5px;
         }
+
+        .mapboxgl-canvas-container.mapboxgl-interactive,
+        .mapboxgl-ctrl-group button.mapboxgl-ctrl-compass {
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
     <div id="map"></div>
-    <div class='map-overlay legend'>
-        <div id='legend'></div>
-    </div>
-    <div class='map-overlay'>
-        <h2>US Population Density</h2>
+    <div class='map-overlay' id='features'>
+        <h2>US population density</h2>
         <div id='text-description'>
             <p>Hover over a state!</p>
         </div>
     </div>
-
+    <div class='map-overlay' id='legend'></div>
     <script>
-         mapboxgl.accessToken = 'pk.eyJ1IjoiYmFsdGVqNyIsImEiOiJjbHlvdWZ6NHIwZWp1Mm1uNnlweG1qdnk5In0.7vbvUhevnqftLtYk3kXDWA';
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYmFsdGVqNyIsImEiOiJjbHlvdWZ6NHIwZWp1Mm1uNnlweG1qdnk5In0.7vbvUhevnqftLtYk3kXDWA';
 
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/light-v10',
             zoom: 3,
-            center: [-100, 40] // Adjust the center as needed
+            center: [-100, 40]
         });
 
-        map.on('load', async () => {
-            // Load GeoJSON data
-            try {
-                let response = await fetch('assets/stateData.geojson');
-                let stateData = await response.json();
+        async function geojsonFetch() {
+            let response = await fetch('file:///C:/Users/baltejsingh/Desktop/lab4/assets/pop_density.geojson');
+            let popDensityData = await response.json();
 
-                // Add GeoJSON source to map
-                map.addSource('stateData', {
+            map.on('load', function loadingData() {
+                map.addSource('pop-density-data', {
                     type: 'geojson',
-                    data: stateData
+                    data: popDensityData
                 });
 
-                // Add layer to map
                 map.addLayer({
-                    'id': 'stateData-layer',
+                    'id': 'pop-density-layer',
                     'type': 'fill',
-                    'source': 'stateData',
+                    'source': 'pop-density-data',
                     'paint': {
                         'fill-color': [
                             'step',
-                            ['get', 'density'], // Use 'density' attribute for coloring
-                            '#FFEDA0', 10,
-                            '#FED976', 20,
-                            '#FEB24C', 50,
-                            '#FD8D3C', 100,
-                            '#FC4E2A', 200,
-                            '#E31A1C', 500,
-                            '#BD0026', 1000,
-                            '#800026'
+                            ['get', 'density'],
+                            '#FFEDA0',   // stop_output_0
+                            10,          // stop_input_0
+                            '#FED976',   // stop_output_1
+                            20,          // stop_input_1
+                            '#FEB24C',   // stop_output_2
+                            50,          // stop_input_2
+                            '#FD8D3C',   // stop_output_3
+                            100,         // stop_input_3
+                            '#FC4E2A',   // stop_output_4
+                            200,         // stop_input_4
+                            '#E31A1C',   // stop_output_5
+                            500,         // stop_input_5
+                            '#BD0026',   // stop_output_6
+                            1000,        // stop_input_6
+                            "#800026"    // stop_output_7
                         ],
                         'fill-opacity': 0.7,
-                        'fill-outline-color': '#BBBBBB'
                     }
                 });
 
-                // Add legend
+                // Legend
                 const legend = document.getElementById('legend');
-                legend.innerHTML = "<b>Population Density</b><br><br>";
-                const intervals = ['0-9', '10-19', '20-49', '50-99', '100-199', '200-499', '500-999', '1000+'];
-                const colors = ['#FFEDA070', '#FED97670', '#FEB24C70', '#FD8D3C70', '#FC4E2A70', '#E31A1C70', '#BD002670', '#80002670'];
+                legend.innerHTML = "<b>Population Density<br>(people/sq.mi.)</b><br><br>";
 
-                intervals.forEach((interval, i) => {
+                const layers = [
+                    '0-9',
+                    '10-19',
+                    '20-49',
+                    '50-99',
+                    '100-199',
+                    '200-499',
+                    '500-999',
+                    '1000 and more'
+                ];
+
+                const colors = [
+                    '#FFEDA070',
+                    '#FED97670',
+                    '#FEB24C70',
+                    '#FD8D3C70',
+                    '#FC4E2A70',
+                    '#E31A1C70',
+                    '#BD002670',
+                    '#80002670'
+                ];
+
+                layers.forEach((layer, i) => {
+                    const color = colors[i];
                     const item = document.createElement('div');
-                    item.innerHTML = `<span class='legend-key' style='background-color: ${colors[i]};'></span> ${interval}`;
+                    const key = document.createElement('span');
+                    key.className = 'legend-key';
+                    key.style.backgroundColor = color;
+
+                    const value = document.createElement('span');
+                    value.innerHTML = `${layer}`;
+                    item.appendChild(key);
+                    item.appendChild(value);
                     legend.appendChild(item);
                 });
 
                 // Hover effect
                 map.on('mousemove', ({ point }) => {
                     const state = map.queryRenderedFeatures(point, {
-                        layers: ['stateData-layer']
+                        layers: ['pop-density-layer']
                     });
 
-                    if (state.length > 0) {
-                        document.getElementById('text-description').innerHTML = `
-                            <h3>${state[0].properties.name}</h3>
-                            <p><strong>${state[0].properties.density}</strong> people per square mile</p>
-                        `;
-                    } else {
-                        document.getElementById('text-description').innerHTML = `<p>Hover over a state!</p>`;
-                    }
+                    document.getElementById('text-description').innerHTML = state.length ?
+                        `<h3>${state[0].properties.name}</h3><p><strong>${state[0].properties.density}</strong> people per square mile</p>` :
+                        `<p>Hover over a state!</p>`;
                 });
+            });
+        }
 
-            } catch (error) {
-                console.error('Error loading GeoJSON data:', error);
-            }
-        });
+        geojsonFetch();
     </script>
-
 </body>
 
 </html>
