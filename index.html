@@ -36,6 +36,10 @@
         .legend {
             bottom: 20px; /* Adjust bottom position */
             left: 20px; /* Adjust left position */
+            background-color: #fff; /* Background color for the legend */
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .data-display {
@@ -70,7 +74,7 @@
 
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/light-v10',
+            style: 'mapbox://styles/mapbox/light-v10', // Keeping the same background style
             center: [-120.7401, 47.7511], // Washington state center
             zoom: 6
         });
@@ -90,23 +94,25 @@
                 source: 'covid-data',
                 paint: {
                     'fill-color': [
-                        'step',
+                        'interpolate',
+                        ['linear'],
                         ['get', 'casePer10k'],
-                        '#FFEDA0',   // color if casePer10k < 10
-                        10,          // threshold
-                        '#FED976',
+                        0,
+                        '#F1EEF6',   // Light purple
+                        10,
+                        '#D4B9DA',
                         20,
-                        '#FEB24C',
+                        '#C994C7',
                         50,
-                        '#FD8D3C',
+                        '#DF65B0',
                         100,
-                        '#FC4E2A',
+                        '#E7298A',
                         200,
-                        '#E31A1C',
+                        '#CE1256',
                         500,
-                        '#BD0026',
+                        '#980043',
                         1000,
-                        '#800026'
+                        '#67001F'   // Dark pink
                     ],
                     'fill-opacity': 0.7
                 }
@@ -116,7 +122,7 @@
             const legend = document.getElementById('legend');
             legend.innerHTML = "<b>Cases per 10k</b><br><br>";
             const intervals = ['0-9', '10-19', '20-49', '50-99', '100-199', '200-499', '500-999', '1000+'];
-            const colors = ['#FFEDA070', '#FED97670', '#FEB24C70', '#FD8D3C70', '#FC4E2A70', '#E31A1C70', '#BD002670', '#80002670'];
+            const colors = ['#F1EEF6', '#D4B9DA', '#C994C7', '#DF65B0', '#E7298A', '#CE1256', '#980043', '#67001F'];
 
             intervals.forEach((interval, i) => {
                 const item = document.createElement('div');
